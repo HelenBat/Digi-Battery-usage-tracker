@@ -1,3 +1,3 @@
-# social_media_carbon_footprint
+# Digital Carbon Footprint Tracker
 
-A new Flutter project.
+An educational and research targeted app that tracks usage and calculates carbon footprint of social media apps.

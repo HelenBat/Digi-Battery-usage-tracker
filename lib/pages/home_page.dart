@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/usage_service.dart';
 import '../widgets/carbon_circle.dart';
+import '../widgets/app_drawer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -34,10 +35,8 @@ class _HomePageState extends State<HomePage> {
         _totalCO2 = total;
       });
     } catch (e) {
-      // Log or handle errors as needed
       debugPrint('Error fetching usage: $e');
     } finally {
-      // Ensure spinner is hidden no matter what
       setState(() {
         _isLoading = false;
       });
@@ -49,13 +48,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Carbon Footprint Tracker'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.show_chart),
-            onPressed: () => Navigator.pushNamed(context, '/stats'),
-          ),
-        ],
       ),
+      drawer: const AppDrawer(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Center(

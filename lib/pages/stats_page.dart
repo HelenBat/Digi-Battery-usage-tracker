@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/usage_service.dart';
 import '../widgets/charts.dart';
+import '../widgets/app_drawer.dart';
 
 class StatsPage extends StatefulWidget {
   const StatsPage({Key? key}) : super(key: key);
@@ -9,8 +10,7 @@ class StatsPage extends StatefulWidget {
   State<StatsPage> createState() => _StatsPageState();
 }
 
-class _StatsPageState extends State<StatsPage>
-    with SingleTickerProviderStateMixin {
+class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final UsageService _usageService = UsageService();
 
@@ -80,6 +80,7 @@ class _StatsPageState extends State<StatsPage>
           ],
         ),
       ),
+      drawer: const AppDrawer(),
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -91,8 +92,7 @@ class _StatsPageState extends State<StatsPage>
     );
   }
 
-  Widget _buildTabContent(
-      List<Map<String, dynamic>> usageData, bool isLoading) {
+  Widget _buildTabContent(List<Map<String, dynamic>> usageData, bool isLoading) {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

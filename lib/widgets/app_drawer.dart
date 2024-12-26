@@ -9,18 +9,26 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // An optional header at the top
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-            ),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Text(
-                'Menu',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.white,
-                    ),
+          // Use a SizedBox to force a custom height.
+          SizedBox(
+            height: 100,
+            child: DrawerHeader(
+              margin: EdgeInsets.zero,
+              // Only left padding to match ListTile indentation (16 px).
+              padding: const EdgeInsets.only(left: 16),
+              decoration: const BoxDecoration(
+                // Match page background color #B3D48E
+                color: Color(0xFFB3D48E),
+              ),
+              // Center vertically, left-align horizontally
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Menu',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.black,
+                      ),
+                ),
               ),
             ),
           ),
@@ -30,9 +38,8 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.home),
             title: const Text('Home'),
             onTap: () {
-              Navigator.pop(context); // close the drawer
-              Navigator.pushReplacementNamed(context, '/'); 
-              // or Navigator.pushNamed if you'd like multiple stack pushes
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/');
             },
           ),
 
@@ -46,16 +53,7 @@ class AppDrawer extends StatelessWidget {
             },
           ),
 
-          // Future pages can be added here
-          // e.g. a Profile page:
-          // ListTile(
-          //   leading: Icon(Icons.person),
-          //   title: Text('Profile'),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     Navigator.pushReplacementNamed(context, '/profile');
-          //   },
-          // ),
+          // Additional items can go here...
         ],
       ),
     );

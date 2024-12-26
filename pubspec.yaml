@@ -22,3 +22,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/fonts/
+
+fonts:
+  - family: Titillium
+    fonts:
+      - asset: assets/fonts/TitilliumWeb-Regular.ttf
+      - asset: assets/fonts/TitilliumWeb-Bold.ttf
+        weight: 700

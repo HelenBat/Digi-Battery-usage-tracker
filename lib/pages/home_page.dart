@@ -13,7 +13,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final UsageService _usageService = UsageService();
 
-  double _totalCO2 = 0.0;
+  double _totalCO2 = 0.0; // in grams
   bool _isLoading = true;
 
   @override
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       setState(() {
-        _totalCO2 = total;
+        _totalCO2 = total; // still in grams
       });
     } catch (e) {
       debugPrint('Error fetching usage: $e');
@@ -45,9 +45,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carbon Footprint Tracker'),
+        title: const Text('Digital Carbon Footprint Tracker'),
       ),
       drawer: const AppDrawer(),
       body: _isLoading
@@ -56,11 +58,17 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Responsive two-line title
                   Text(
-                    "Today's Carbon Footprint",
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    "Digital Carbon Footprint\nToday",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: screenWidth * 0.07,
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
+                  // The new CarbonCircle widget
                   CarbonCircle(co2Value: _totalCO2),
                 ],
               ),

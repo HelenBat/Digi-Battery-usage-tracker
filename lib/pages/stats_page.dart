@@ -30,6 +30,7 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
     _fetchAllData();
   }
 
+  /// Fetch all time ranges in sequence
   Future<void> _fetchAllData() async {
     await _fetchWeeklyUsage();
     await _fetchMonthlyUsage();
@@ -37,33 +38,54 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
   }
 
   Future<void> _fetchWeeklyUsage() async {
-    final now = DateTime.now();
-    final start = now.subtract(const Duration(days: 7));
-    final usageList = await _usageService.getRangeUsage(start: start, end: now);
-    setState(() {
-      _weeklyData = usageList;
-      _loadingWeekly = false;
-    });
+    try {
+      final now = DateTime.now();
+      final start = now.subtract(const Duration(days: 7));
+      final usageList = await _usageService.getRangeUsage(start: start, end: now);
+      setState(() {
+        _weeklyData = usageList;
+      });
+    } catch (e) {
+      debugPrint('Error fetching weekly usage: $e');
+    } finally {
+      setState(() {
+        _loadingWeekly = false;
+      });
+    }
   }
 
   Future<void> _fetchMonthlyUsage() async {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month - 1, now.day);
-    final usageList = await _usageService.getRangeUsage(start: start, end: now);
-    setState(() {
-      _monthlyData = usageList;
-      _loadingMonthly = false;
-    });
+    try {
+      final now = DateTime.now();
+      final start = DateTime(now.year, now.month - 1, now.day);
+      final usageList = await _usageService.getRangeUsage(start: start, end: now);
+      setState(() {
+        _monthlyData = usageList;
+      });
+    } catch (e) {
+      debugPrint('Error fetching monthly usage: $e');
+    } finally {
+      setState(() {
+        _loadingMonthly = false;
+      });
+    }
   }
 
   Future<void> _fetchYearlyUsage() async {
-    final now = DateTime.now();
-    final start = DateTime(now.year - 1, now.month, now.day);
-    final usageList = await _usageService.getRangeUsage(start: start, end: now);
-    setState(() {
-      _yearlyData = usageList;
-      _loadingYearly = false;
-    });
+    try {
+      final now = DateTime.now();
+      final start = DateTime(now.year - 1, now.month, now.day);
+      final usageList = await _usageService.getRangeUsage(start: start, end: now);
+      setState(() {
+        _yearlyData = usageList;
+      });
+    } catch (e) {
+      debugPrint('Error fetching yearly usage: $e');
+    } finally {
+      setState(() {
+        _loadingYearly = false;
+      });
+    }
   }
 
   @override
@@ -92,13 +114,16 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
     );
   }
 
+  /// Helper to build each tab's content based on data + loading flags
   Widget _buildTabContent(List<Map<String, dynamic>> usageData, bool isLoading) {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     if (usageData.isEmpty) {
+      // If data is fetched but array is empty, show a "No data" message
       return const Center(child: Text('No data available.'));
     }
+    // Otherwise, show the charts
     return SingleChildScrollView(
       child: Column(
         children: [

@@ -14,7 +14,15 @@ class SocialMediaCarbonFootprintApp extends StatelessWidget {
     return MaterialApp(
       title: 'Social Media Carbon Footprint',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        fontFamily: 'Titillium', // MUST match the "family" in pubspec.yaml
+        scaffoldBackgroundColor: const Color(0xFFB3D48E),
+        // Optionally tweak your TextTheme further:
+        textTheme: const TextTheme(
+          headlineMedium: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+          // etc.
+        ),
       ),
       initialRoute: '/',
       routes: {

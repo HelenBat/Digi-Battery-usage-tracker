@@ -63,6 +63,16 @@ class AppDrawer extends StatelessWidget {
             },
           ),
 
+          // Total Impact
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('About'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/about');
+            },
+          ),
+
           // Additional items can go here...
         ],
       ),

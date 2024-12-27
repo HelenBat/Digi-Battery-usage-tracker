@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'pages/stats_page.dart';
 import 'pages/total_impact_page.dart';
+import 'pages/about_page.dart';
 import 'screens/permission_check_screen.dart'; 
 
 void main() {
@@ -36,6 +37,7 @@ class SocialMediaCarbonFootprintApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/stats': (context) => const StatsPage(),
         '/totalImpact': (context) => const TotalImpactPage(),
+        '/about': (context) => const AboutPage(),
       },
     );
   }

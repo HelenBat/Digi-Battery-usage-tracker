@@ -1,125 +1,190 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class SocialMediaPieChart extends StatelessWidget {
-  final List<Map<String, dynamic>> usageData;
+class SocialMediaPieChart extends StatefulWidget {
+  final Map<String, List<Map<String, dynamic>>> usageDataByPeriod;
 
-  const SocialMediaPieChart({Key? key, required this.usageData})
+  const SocialMediaPieChart({Key? key, required this.usageDataByPeriod})
       : super(key: key);
 
   @override
+  State<SocialMediaPieChart> createState() => _SocialMediaPieChartState();
+}
+
+class _SocialMediaPieChartState extends State<SocialMediaPieChart>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  int _touchedIndex = -1;
+
+  static const Map<String, Color> appColors = {
+    'com.google.android.youtube': Color(0xFFADD8E6), // Light Blue
+    'tv.twitch.android.app': Color(0xFFFFB6C1), // Light Pink
+    'com.twitter.android': Color(0xFF87CEFA), // Sky Blue
+    'com.linkedin.android': Color(0xFFB0E0E6), // Powder Blue
+    'com.facebook.katana': Color(0xFFFFA07A), // Light Salmon
+    'com.snapchat.android': Color(0xFFFFFF99), // Light Yellow
+    'com.instagram.android': Color(0xFFFFDAB9), // Peach Puff
+    'com.pinterest': Color(0xFFD8BFD8), // Thistle
+    'com.reddit.frontpage': Color(0xFFFF9999), // Light Coral
+    'com.zhiliaoapp.musically': Color(0xFF98FB98), // Pale Green (TikTok)
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Calculate total CO2
+    return Column(
+      children: [
+        TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Weekly'),
+            Tab(text: 'Monthly'),
+            Tab(text: 'Yearly'),
+          ],
+          labelColor: Colors.black,
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildChartView(widget.usageDataByPeriod['weekly'] ?? []),
+              _buildChartView(widget.usageDataByPeriod['monthly'] ?? []),
+              _buildChartView(widget.usageDataByPeriod['yearly'] ?? []),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChartView(List<Map<String, dynamic>> usageData) {
+    if (usageData.isEmpty) {
+      return const Center(child: Text('No data available.'));
+    }
+
+    return Column(
+      children: [
+        // Pie chart
+        Expanded(
+          flex: 3,
+          child: Center(child: _buildPieChart(usageData)),
+        ),
+        const SizedBox(height: 16),
+        // Legend
+        Expanded(
+          flex: 2,
+          child: _buildLegend(usageData),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPieChart(List<Map<String, dynamic>> usageData) {
     double totalCO2 = 0;
     for (var data in usageData) {
       totalCO2 += (data['co2'] as double);
     }
 
-    // Generate sections
-    final sections = usageData.map((data) {
+    final sections = usageData.asMap().entries.map((entry) {
+      final index = entry.key;
+      final data = entry.value;
       final co2 = data['co2'] as double;
       final percentage = totalCO2 == 0 ? 0 : (co2 / totalCO2) * 100;
+      final packageName = data['package'] as String;
+      final color = appColors[packageName] ?? Colors.grey;
+
       return PieChartSectionData(
         value: co2,
-        title: "${percentage.toStringAsFixed(1)}%",
-        color: _randomColorForApp(data['package']),
-        radius: 80,
+        title: '',
+        color: color,
+        radius: index == _touchedIndex ? 90 : 80, // Highlighted size
         titleStyle: const TextStyle(color: Colors.white, fontSize: 12),
       );
     }).toList();
 
-    return PieChart(
-      PieChartData(
-        sections: sections,
-        centerSpaceRadius: 40,
-        sectionsSpace: 2,
-      ),
-    );
-  }
-
-  /// Simple function to get a color based on package name.
-  Color _randomColorForApp(String packageName) {
-    // You might want a more consistent approach or a mapping
-    final colors = [
-      Colors.blue,
-      Colors.red,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.brown,
-      Colors.cyan,
-      Colors.pink,
-      Colors.yellow,
-      Colors.grey,
-    ];
-    return colors[packageName.hashCode % colors.length];
-  }
-}
-
-class SocialMediaLineChart extends StatelessWidget {
-  final List<Map<String, dynamic>> usageData;
-
-  const SocialMediaLineChart({Key? key, required this.usageData})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    // For demonstration, we’ll plot each app’s CO2 in a single line
-    // or an aggregated line over time. Real usage would require data points at intervals.
-    // Here, we show a simplistic approach with usage index on X-axis and CO2 on Y-axis.
-
-    // Sort usageData by CO2 ascending for a simple line
-    final sortedUsage = List<Map<String, dynamic>>.from(usageData)
-      ..sort((a, b) => (a['co2'] as double).compareTo(b['co2'] as double));
-
-    List<FlSpot> spots = [];
-    for (int i = 0; i < sortedUsage.length; i++) {
-      final co2Val = sortedUsage[i]['co2'] as double;
-      spots.add(FlSpot(i.toDouble(), co2Val));
-    }
-
-    final lineBarData = LineChartBarData(
-      spots: spots,
-      isCurved: true,
-      color: Colors.blueAccent,
-      barWidth: 2,
-      dotData: FlDotData(show: true),
-    );
-
-    return LineChart(
-      LineChartData(
-        minX: 0,
-        maxX: (spots.isEmpty ? 1 : spots.length - 1).toDouble(),
-        minY: 0,
-        maxY: _maxCO2(spots),
-        borderData: FlBorderData(show: false),
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) => Text(
-                'App ${(value + 1).toInt()}',
-                style: const TextStyle(fontSize: 10),
-              ),
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+    final screenWidth = MediaQuery.of(context).size.width;
+    return SizedBox(
+      width: screenWidth * 0.8,
+      height: screenWidth * 0.8,
+      child: PieChart(
+        PieChartData(
+          sections: sections,
+          centerSpaceRadius: 40,
+          sectionsSpace: 2,
+          pieTouchData: PieTouchData(
+            touchCallback: (event, response) {
+              setState(() {
+                if (response == null || response.touchedSection == null) {
+                  _touchedIndex = -1;
+                  return;
+                }
+                _touchedIndex = response.touchedSection!.touchedSectionIndex;
+              });
+            },
           ),
         ),
-        lineBarsData: [lineBarData],
       ),
     );
   }
 
-  double _maxCO2(List<FlSpot> spots) {
-    double maxVal = 0;
-    for (var spot in spots) {
-      if (spot.y > maxVal) {
-        maxVal = spot.y;
-      }
-    }
-    if (maxVal < 1) return 1.0; // just to avoid a zero or too low scale
-    return maxVal;
+  Widget _buildLegend(List<Map<String, dynamic>> usageData) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      width: screenWidth * 0.8,
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 16,
+        runSpacing: 8,
+        children: usageData.map((data) {
+          final packageName = data['package'] as String;
+          final appName = _getAppName(packageName);
+          final color = appColors[packageName] ?? Colors.grey;
+          final co2 = data['co2'] as double;
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$appName (${co2.toStringAsFixed(1)}%)',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  String _getAppName(String packageName) {
+    const packageToName = {
+      'com.google.android.youtube': 'YouTube',
+      'tv.twitch.android.app': 'Twitch',
+      'com.twitter.android': 'Twitter',
+      'com.linkedin.android': 'LinkedIn',
+      'com.facebook.katana': 'Facebook',
+      'com.snapchat.android': 'Snapchat',
+      'com.instagram.android': 'Instagram',
+      'com.pinterest': 'Pinterest',
+      'com.reddit.frontpage': 'Reddit',
+      'com.zhiliaoapp.musically': 'TikTok',
+    };
+
+    return packageToName[packageName] ?? packageName;
   }
 }

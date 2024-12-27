@@ -10,14 +10,14 @@ class StatsPage extends StatefulWidget {
   State<StatsPage> createState() => _StatsPageState();
 }
 
-class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _StatsPageState extends State<StatsPage> {
   final UsageService _usageService = UsageService();
 
-  // Data placeholders
-  List<Map<String, dynamic>> _weeklyData = [];
-  List<Map<String, dynamic>> _monthlyData = [];
-  List<Map<String, dynamic>> _yearlyData = [];
+  final Map<String, List<Map<String, dynamic>>> _usageDataByPeriod = {
+    'weekly': [],
+    'monthly': [],
+    'yearly': [],
+  };
 
   bool _loadingWeekly = true;
   bool _loadingMonthly = true;
@@ -26,11 +26,9 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _fetchAllData();
   }
 
-  /// Fetch all time ranges in sequence
   Future<void> _fetchAllData() async {
     await _fetchWeeklyUsage();
     await _fetchMonthlyUsage();
@@ -43,7 +41,7 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
       final start = now.subtract(const Duration(days: 7));
       final usageList = await _usageService.getRangeUsage(start: start, end: now);
       setState(() {
-        _weeklyData = usageList;
+        _usageDataByPeriod['weekly'] = usageList;
       });
     } catch (e) {
       debugPrint('Error fetching weekly usage: $e');
@@ -60,7 +58,7 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
       final start = DateTime(now.year, now.month - 1, now.day);
       final usageList = await _usageService.getRangeUsage(start: start, end: now);
       setState(() {
-        _monthlyData = usageList;
+        _usageDataByPeriod['monthly'] = usageList;
       });
     } catch (e) {
       debugPrint('Error fetching monthly usage: $e');
@@ -77,7 +75,7 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
       final start = DateTime(now.year - 1, now.month, now.day);
       final usageList = await _usageService.getRangeUsage(start: start, end: now);
       setState(() {
-        _yearlyData = usageList;
+        _usageDataByPeriod['yearly'] = usageList;
       });
     } catch (e) {
       debugPrint('Error fetching yearly usage: $e');
@@ -93,53 +91,13 @@ class _StatsPageState extends State<StatsPage> with SingleTickerProviderStateMix
     return Scaffold(
       appBar: AppBar(
         title: const Text('Usage Statistics'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Weekly'),
-            Tab(text: 'Monthly'),
-            Tab(text: 'Yearly'),
-          ],
-        ),
       ),
       drawer: const AppDrawer(),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTabContent(_weeklyData, _loadingWeekly),
-          _buildTabContent(_monthlyData, _loadingMonthly),
-          _buildTabContent(_yearlyData, _loadingYearly),
-        ],
-      ),
-    );
-  }
-
-  /// Helper to build each tab's content based on data + loading flags
-  Widget _buildTabContent(List<Map<String, dynamic>> usageData, bool isLoading) {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (usageData.isEmpty) {
-      // If data is fetched but array is empty, show a "No data" message
-      return const Center(child: Text('No data available.'));
-    }
-    // Otherwise, show the charts
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Pie Chart
-          SizedBox(
-            height: 300,
-            child: SocialMediaPieChart(usageData: usageData),
-          ),
-          const SizedBox(height: 20),
-          // Line Chart
-          SizedBox(
-            height: 300,
-            child: SocialMediaLineChart(usageData: usageData),
-          ),
-        ],
-      ),
+      body: _loadingWeekly || _loadingMonthly || _loadingYearly
+          ? const Center(child: CircularProgressIndicator())
+          : SocialMediaPieChart(
+              usageDataByPeriod: _usageDataByPeriod,
+            ),
     );
   }
 }

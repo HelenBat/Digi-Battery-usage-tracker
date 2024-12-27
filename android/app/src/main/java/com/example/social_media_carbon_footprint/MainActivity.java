@@ -27,16 +27,16 @@ public class MainActivity extends FlutterActivity {
     // Hard-coded map of (Android package name -> grams of CO2 per MINUTE)
     // Adjust them according to the reference page’s data (grams per minute).
     private static final Map<String, Double> SOCIAL_MEDIA_CO2_MAP = new HashMap<String, Double>() {{
+        put("com.google.android.youtube", 0.46); // YouTube
+        put("tv.twitch.android.app", 0.55); // Twitch
+        put("com.twitter.android", 0.60); // Twitter
+        put("com.linkedin.android", 0.71); // LinkedIn
         put("com.facebook.katana", 0.79); // Facebook
-        put("com.instagram.android", 1.05); // Instagram
-        put("com.twitter.android", 0.60);  // Twitter (X)
         put("com.snapchat.android", 0.87); // Snapchat
-        put("com.pinterest", 0.63);       // Pinterest
-        put("com.linkedin.android", 0.72); // LinkedIn
-        put("com.reddit.frontpage", 0.69); // Reddit
-        put("com.tumblr", 0.80);          // Tumblr
-        put("com.google.android.youtube", 2.00); // YouTube
-        put("com.whatsapp", 0.55);        // WhatsApp
+        put("com.instagram.android", 1.05); // Instagram
+        put("com.pinterest", 1.30); // Pinterest
+        put("com.reddit.frontpage", 2.48); // Reddit
+        put("com.zhiliaoapp.musically", 2.63); // TikTok
     }};
 
     @Override

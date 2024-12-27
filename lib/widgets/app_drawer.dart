@@ -46,10 +46,30 @@ class AppDrawer extends StatelessWidget {
           // Stats
           ListTile(
             leading: const Icon(Icons.show_chart),
-            title: const Text('Stats'),
+            title: const Text('Usage Statistics'),
             onTap: () {
               Navigator.pop(context);
               Navigator.pushReplacementNamed(context, '/stats');
+            },
+          ),
+
+          // Total Impact
+          ListTile(
+            leading: const Icon(Icons.assessment),
+            title: const Text('Total Impact'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/totalImpact');
+            },
+          ),
+
+          // Total Impact
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('About'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/about');
             },
           ),
 

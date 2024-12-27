@@ -1,9 +1,13 @@
 package com.example.social_media_carbon_footprint;
 
+import android.app.AppOpsManager;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 
@@ -13,28 +17,26 @@ import io.flutter.plugin.common.MethodChannel;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "social_media_carbon_footprint/usage";
 
     // Hard-coded map of (Android package name -> grams of CO2 per MINUTE)
-    // Values below are only EXAMPLES (not the actual values from carbonliteracy.com).
     // Adjust them according to the reference page’s data (grams per minute).
     private static final Map<String, Double> SOCIAL_MEDIA_CO2_MAP = new HashMap<String, Double>() {{
+        put("com.google.android.youtube", 0.46); // YouTube
+        put("tv.twitch.android.app", 0.55); // Twitch
+        put("com.twitter.android", 0.60); // Twitter
+        put("com.linkedin.android", 0.71); // LinkedIn
         put("com.facebook.katana", 0.79); // Facebook
-        put("com.instagram.android", 1.05); // Instagram
-        put("com.twitter.android", 0.60); // Twitter (X)
         put("com.snapchat.android", 0.87); // Snapchat
-        put("com.pinterest", 0.63); // Pinterest
-        put("com.linkedin.android", 0.72); // LinkedIn
-        put("com.reddit.frontpage", 0.69); // Reddit
-        put("com.tumblr", 0.80); // Tumblr
-        put("com.google.android.youtube", 2.00); // YouTube (if considered social media)
-        put("com.whatsapp", 0.55); // WhatsApp
-        // Feel free to replace or remove any that differ from your needs
+        put("com.instagram.android", 1.05); // Instagram
+        put("com.pinterest", 1.30); // Pinterest
+        put("com.reddit.frontpage", 2.48); // Reddit
+        put("com.zhiliaoapp.musically", 2.63); // TikTok
     }};
 
     @Override
@@ -43,22 +45,66 @@ public class MainActivity extends FlutterActivity {
 
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
-                    if (call.method.equals("getDailyUsage")) {
-                        // Return usage stats for TODAY
-                        String usageData = getDailyUsageStats();
-                        result.success(usageData);
-                    } else if (call.method.equals("getRangeUsage")) {
-                        // Return usage stats for custom range: startTime, endTime
-                        // Passed from Dart as milliseconds
-                        long startTime = call.argument("startTime");
-                        long endTime = call.argument("endTime");
-                        String usageData = getRangeUsageStats(startTime, endTime);
-                        result.success(usageData);
-                    } else {
-                        result.notImplemented();
+                    switch (call.method) {
+                        case "getDailyUsage": {
+                            // Return usage stats for TODAY
+                            String usageData = getDailyUsageStats();
+                            result.success(usageData);
+                            break;
+                        }
+                        case "getRangeUsage": {
+                            // Return usage stats for custom range
+                            long startTime = call.argument("startTime");
+                            long endTime = call.argument("endTime");
+                            String usageData = getRangeUsageStats(startTime, endTime);
+                            result.success(usageData);
+                            break;
+                        }
+                        case "hasUsagePermission": {
+                            boolean hasPermission = hasUsageStatsPermission(this);
+                            result.success(hasPermission);
+                            break;
+                        }
+                        case "openUsageSettings": {
+                            openUsageAccessSettings();
+                            result.success(null);
+                            break;
+                        }
+                        default:
+                            result.notImplemented();
+                            break;
                     }
                 });
     }
+
+    // ---------------------------
+    //  Permission Check Methods
+    // ---------------------------
+
+    /**
+     * Checks if this app has Usage Stats permission.
+     */
+    private static boolean hasUsageStatsPermission(Context context) {
+        AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow("android:get_usage_stats",
+                android.os.Process.myUid(),
+                context.getPackageName());
+        return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+    /**
+     * Opens the Usage Access settings screen so the user can grant permission.
+     */
+    private void openUsageAccessSettings() {
+        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        intent.setData(Uri.parse("package:" + getPackageName()));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    // ---------------------------
+    //  Usage Stats Methods
+    // ---------------------------
 
     /**
      * Get usage for the current day, from midnight until now.
@@ -66,12 +112,14 @@ public class MainActivity extends FlutterActivity {
     private String getDailyUsageStats() {
         Calendar calendar = Calendar.getInstance();
         long endTime = calendar.getTimeInMillis();
+
         // Set to midnight
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         long startTime = calendar.getTimeInMillis();
+
         return getUsageFormatted(startTime, endTime);
     }
 
@@ -83,7 +131,7 @@ public class MainActivity extends FlutterActivity {
     }
 
     /**
-     * Core usage retrieval, filters only the 10 social media apps of interest, 
+     * Core usage retrieval, filters only the 10 social media apps of interest,
      * calculates total usage minutes, and multiplies by each app’s CO2 factor.
      */
     private String getUsageFormatted(long startTime, long endTime) {
@@ -91,7 +139,8 @@ public class MainActivity extends FlutterActivity {
             return "Unsupported Android version for UsageStats (below Lollipop).";
         }
 
-        UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        UsageStatsManager usageStatsManager =
+                (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         List<UsageStats> stats = usageStatsManager.queryUsageStats(
                 UsageStatsManager.INTERVAL_DAILY, startTime, endTime);
 
@@ -99,12 +148,12 @@ public class MainActivity extends FlutterActivity {
             return "No usage data available. (Check if permission is granted)";
         }
 
-        // We’ll collect usage data for relevant social media apps only
+        // Collect usage data for relevant social media apps only
         HashMap<String, Long> appForegroundTimeMap = new HashMap<>();
         for (UsageStats usage : stats) {
             String packageName = usage.getPackageName();
             if (SOCIAL_MEDIA_CO2_MAP.containsKey(packageName)) {
-                long totalForegroundTime = usage.getTotalTimeInForeground(); // in ms
+                long totalForegroundTime = usage.getTotalTimeInForeground(); // ms
                 // Accumulate in case of multiple intervals
                 appForegroundTimeMap.put(
                         packageName,
@@ -113,7 +162,7 @@ public class MainActivity extends FlutterActivity {
             }
         }
 
-        // Build a JSON-like string with usage in minutes and CO2
+        // Build JSON-like string with usage in minutes and CO2
         List<String> usageResults = new ArrayList<>();
         for (Map.Entry<String, Long> entry : appForegroundTimeMap.entrySet()) {
             String packageName = entry.getKey();
@@ -128,7 +177,7 @@ public class MainActivity extends FlutterActivity {
             ));
         }
 
-        // Return a list of JSON objects in a string
+        // Return array of JSON objects in a string
         return "[" + String.join(",", usageResults) + "]";
     }
 }

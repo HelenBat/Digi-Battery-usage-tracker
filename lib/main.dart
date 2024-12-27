@@ -1,6 +1,11 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'pages/stats_page.dart';
+import 'pages/total_impact_page.dart';
+import 'pages/about_page.dart';
+import 'screens/permission_check_screen.dart'; 
 
 void main() {
   runApp(const SocialMediaCarbonFootprintApp());
@@ -14,20 +19,25 @@ class SocialMediaCarbonFootprintApp extends StatelessWidget {
     return MaterialApp(
       title: 'Social Media Carbon Footprint',
       theme: ThemeData(
-        fontFamily: 'Titillium', // MUST match the "family" in pubspec.yaml
+        fontFamily: 'Titillium',
         scaffoldBackgroundColor: const Color(0xFFB3D48E),
-        // Optionally tweak your TextTheme further:
         textTheme: const TextTheme(
           headlineMedium: TextStyle(
             fontWeight: FontWeight.bold,
           ),
-          // etc.
         ),
       ),
+      // We start by checking usage permission
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomePage(),
+        // Step 1: Permission check
+        '/': (context) => const PermissionCheckScreen(),
+
+        // Step 2: If granted, go to real home
+        '/home': (context) => const HomePage(),
         '/stats': (context) => const StatsPage(),
+        '/totalImpact': (context) => const TotalImpactPage(),
+        '/about': (context) => const AboutPage(),
       },
     );
   }

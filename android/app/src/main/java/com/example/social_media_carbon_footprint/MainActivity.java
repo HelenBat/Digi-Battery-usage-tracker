@@ -24,8 +24,7 @@ import java.util.Map;
 public class MainActivity extends FlutterActivity {
     private static final String CHANNEL = "social_media_carbon_footprint/usage";
 
-    // Hard-coded map of (Android package name -> grams of CO2 per MINUTE)
-    // Adjust them according to the reference page’s data (grams per minute).
+    // Map for CO₂ emissions (grams per minute)
     private static final Map<String, Double> SOCIAL_MEDIA_CO2_MAP = new HashMap<String, Double>() {{
         put("com.google.android.youtube", 0.46); // YouTube
         put("tv.twitch.android.app", 0.55); // Twitch
@@ -37,6 +36,20 @@ public class MainActivity extends FlutterActivity {
         put("com.pinterest", 1.30); // Pinterest
         put("com.reddit.frontpage", 2.48); // Reddit
         put("com.zhiliaoapp.musically", 2.63); // TikTok
+    }};
+
+    // Map for energy consumption (mAh per minute)
+    private static final Map<String, Double> SOCIAL_MEDIA_ENERGY_MAP = new HashMap<String, Double>() {{
+        put("com.google.android.youtube", 8.58); // YouTube
+        put("tv.twitch.android.app", 9.05); // Twitch
+        put("com.twitter.android", 10.28); // Twitter
+        put("com.linkedin.android", 8.92); // LinkedIn
+        put("com.facebook.katana", 12.36); // Facebook
+        put("com.snapchat.android", 11.48); // Snapchat
+        put("com.instagram.android", 8.90); // Instagram
+        put("com.pinterest", 10.83); // Pinterest
+        put("com.reddit.frontpage", 11.04); // Reddit
+        put("com.zhiliaoapp.musically", 15.81); // TikTok
     }};
 
     @Override
@@ -131,12 +144,12 @@ public class MainActivity extends FlutterActivity {
     }
 
     /**
-     * Core usage retrieval, filters only the 10 social media apps of interest,
-     * calculates total usage minutes, and multiplies by each app’s CO2 factor.
+     * Core usage retrieval, filters only the social media apps of interest,
+     * calculates total usage minutes, CO2 emissions, and energy consumption.
      */
     private String getUsageFormatted(long startTime, long endTime) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return "Unsupported Android version for UsageStats (below Lollipop).";
+            return "Unsupported Android version for UsageStats.";
         }
 
         UsageStatsManager usageStatsManager =
@@ -168,12 +181,16 @@ public class MainActivity extends FlutterActivity {
             String packageName = entry.getKey();
             long totalMs = entry.getValue();
             double totalMinutes = totalMs / 60000.0; // convert ms to minutes
+
             double co2PerMinute = SOCIAL_MEDIA_CO2_MAP.get(packageName);
             double totalCO2 = totalMinutes * co2PerMinute; // grams of CO2
 
+            double energyPerMinute = SOCIAL_MEDIA_ENERGY_MAP.get(packageName);
+            double totalEnergy = totalMinutes * energyPerMinute;
+
             usageResults.add(String.format(
-                    "{\"package\":\"%s\",\"minutes\":%.2f,\"co2\":%.2f}",
-                    packageName, totalMinutes, totalCO2
+                    "{\"package\":\"%s\",\"minutes\":%.2f,\"co2\":%.2f,\"energy\":%.2f}",
+                    packageName, totalMinutes, totalCO2, totalEnergy
             ));
         }
 

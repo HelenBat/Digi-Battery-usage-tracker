@@ -14,6 +14,7 @@ class _HomePageState extends State<HomePage> {
   final UsageService _usageService = UsageService();
 
   double _totalCO2 = 0.0; // in grams
+  double _totalEnergy = 0.0; // in mAh
   bool _isLoading = true;
 
   @override
@@ -25,14 +26,17 @@ class _HomePageState extends State<HomePage> {
   Future<void> _fetchTodayUsage() async {
     try {
       final usageList = await _usageService.getTodayUsage();
-      double total = 0.0;
+      double totalCO2 = 0.0;
+      double totalEnergy = 0.0;
 
       for (var usage in usageList) {
-        total += (usage['co2'] as double);
+        totalCO2 += (usage['co2'] as double); // calculate total CO2 emission
+        totalEnergy += (usage['energy'] as double); // calculate total energy consumption
       }
 
       setState(() {
-        _totalCO2 = total; // still in grams
+        _totalCO2 = totalCO2; // in grams
+        _totalEnergy = totalEnergy; // in mAh
       });
     } catch (e) {
       debugPrint('Error fetching usage: $e');
@@ -49,7 +53,7 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Digital Carbon Footprint Tracker'),
+        title: const Text('Digital Carbon Footprint'),
       ),
       drawer: const AppDrawer(),
       body: _isLoading
@@ -69,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 30),
                   // The new CarbonCircle widget
-                  CarbonCircle(co2Value: _totalCO2),
+                  CarbonCircle(co2Value: _totalCO2, energyValue: _totalEnergy),
                 ],
               ),
             ),

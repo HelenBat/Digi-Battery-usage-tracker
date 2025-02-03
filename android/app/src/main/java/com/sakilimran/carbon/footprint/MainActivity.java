@@ -1,4 +1,4 @@
-package com.example.social_media_carbon_footprint;
+package com.sakilimran.carbon.footprint;
 
 import android.app.AppOpsManager;
 import android.app.usage.UsageStats;

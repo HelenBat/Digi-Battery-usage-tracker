@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CarbonCircle extends StatelessWidget {
-  final double co2Value; // in grams
+  final double co2Value;    // in grams
+  final double energyValue; // in mAh
 
-  const CarbonCircle({Key? key, required this.co2Value}) : super(key: key);
+  const CarbonCircle({Key? key, required this.co2Value, required this.energyValue})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +41,34 @@ class CarbonCircle extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 // Make the numeric value bigger
-                fontSize: diameter * 0.18, 
+                fontSize: diameter * 0.15,
               ),
             ),
             // The smaller "kg of CO2" text
             Text(
-              'kg of CO2',
+              'kg of CO₂',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                // Smaller than the numeric value
-                fontSize: diameter * 0.12,
+                fontSize: diameter * 0.07,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // The energy consumption text
+            Text(
+              energyValue.toStringAsFixed(2),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: diameter * 0.15,
+              ),
+            ),
+            Text(
+              'mAh of Energy',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: diameter * 0.07,
               ),
             ),
           ],

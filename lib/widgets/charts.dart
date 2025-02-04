@@ -67,43 +67,37 @@ class _SocialMediaPieChartState extends State<SocialMediaPieChart>
       return const Center(child: Text('No data available.'));
     }
 
-    return Column(
-      children: [
-        // Pie chart
-        Expanded(
-          flex: 3,
-          child: Center(child: _buildPieChart(usageData)),
-        ),
-        const SizedBox(height: 16),
-        // Legend
-        Expanded(
-          flex: 2,
-          child: _buildLegend(usageData),
-        ),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Pie chart
+          _buildPieChart(usageData),
+          const SizedBox(height: 16),
+          // Legend
+          _buildLegend(usageData),
+        ],
+      ),
     );
   }
 
   Widget _buildPieChart(List<Map<String, dynamic>> usageData) {
-    double totalCO2 = 0;
-    for (var data in usageData) {
-      totalCO2 += (data['co2'] as double);
-    }
+    double totalCO2 = usageData.fold(0.0, (sum, data) => sum + (data['co2'] as double));
 
     final sections = usageData.asMap().entries.map((entry) {
       final index = entry.key;
       final data = entry.value;
       final co2 = data['co2'] as double;
-      final percentage = totalCO2 == 0 ? 0 : (co2 / totalCO2) * 100;
+      final percentage = totalCO2 > 0 ? (co2 / totalCO2) * 100 : 0;
       final packageName = data['package'] as String;
       final color = appColors[packageName] ?? Colors.grey;
 
       return PieChartSectionData(
         value: co2,
-        title: '',
+        title: "${percentage.toStringAsFixed(1)}%",
         color: color,
-        radius: index == _touchedIndex ? 90 : 80, // Highlighted size
-        titleStyle: const TextStyle(color: Colors.white, fontSize: 12),
+        radius: index == _touchedIndex ? 95 : 80, // Animation on tap
+        titleStyle: const TextStyle(color: Colors.white, fontSize: 14),
       );
     }).toList();
 
@@ -134,6 +128,7 @@ class _SocialMediaPieChartState extends State<SocialMediaPieChart>
 
   Widget _buildLegend(List<Map<String, dynamic>> usageData) {
     final screenWidth = MediaQuery.of(context).size.width;
+    double totalCO2 = usageData.fold(0.0, (sum, data) => sum + (data['co2'] as double));
 
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -147,6 +142,7 @@ class _SocialMediaPieChartState extends State<SocialMediaPieChart>
           final appName = _getAppName(packageName);
           final color = appColors[packageName] ?? Colors.grey;
           final co2 = data['co2'] as double;
+          final percentage = totalCO2 > 0 ? (co2 / totalCO2) * 100 : 0;
 
           return Row(
             mainAxisSize: MainAxisSize.min,
@@ -161,7 +157,7 @@ class _SocialMediaPieChartState extends State<SocialMediaPieChart>
               ),
               const SizedBox(width: 8),
               Text(
-                '$appName (${co2.toStringAsFixed(1)}%)',
+                '$appName (${percentage.toStringAsFixed(1)}%)',
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
             ],

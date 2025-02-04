@@ -20,6 +20,10 @@ class _TotalImpactPageState extends State<TotalImpactPage>
   double _monthlyImpact = 0.0;
   double _yearlyImpact = 0.0;
 
+  double _dailyEnergyImpact = 0.0;
+  double _monthlyEnergyImpact = 0.0;
+  double _yearlyEnergyImpact = 0.0;
+
   bool _loadingDaily = true;
   bool _loadingMonthly = true;
   bool _loadingYearly = true;
@@ -50,13 +54,19 @@ class _TotalImpactPageState extends State<TotalImpactPage>
       final lastYearData = await _usageService.getRangeUsage(
           start: startLastYear, end: endLastYear);
 
-      final thisYearTotal =
-          thisYearData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
-      final lastYearTotal =
-          lastYearData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+      final thisYearTotalCO2 =
+      thisYearData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+      final lastYearTotalCO2 =
+      lastYearData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+
+      final thisYearTotalEnergy =
+      thisYearData.fold<double>(0, (sum, item) => sum + (item['energy'] as double));
+      final lastYearTotalEnergy =
+      lastYearData.fold<double>(0, (sum, item) => sum + (item['energy'] as double));
 
       setState(() {
-        _yearlyImpact = thisYearTotal - lastYearTotal;
+        _yearlyImpact = thisYearTotalCO2 - lastYearTotalCO2;
+        _yearlyEnergyImpact = thisYearTotalEnergy - lastYearTotalEnergy;
       });
     } catch (e) {
       debugPrint('Error fetching yearly impact: $e');
@@ -72,7 +82,7 @@ class _TotalImpactPageState extends State<TotalImpactPage>
       final now = DateTime.now();
       final startThisMonth = DateTime(now.year, now.month, 1);
       final startLastMonth =
-          DateTime(now.year, now.month - 1, 1); // Handles year overflow too
+      DateTime(now.year, now.month - 1, 1); // Handles year overflow
       final endLastMonth = DateTime(now.year, now.month, 0); // Last day of last month
 
       final thisMonthData = await _usageService.getRangeUsage(
@@ -80,13 +90,19 @@ class _TotalImpactPageState extends State<TotalImpactPage>
       final lastMonthData = await _usageService.getRangeUsage(
           start: startLastMonth, end: endLastMonth);
 
-      final thisMonthTotal =
-          thisMonthData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
-      final lastMonthTotal =
-          lastMonthData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+      final thisMonthTotalCO2 =
+      thisMonthData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+      final lastMonthTotalCO2 =
+      lastMonthData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+
+      final thisMonthTotalEnergy =
+      thisMonthData.fold<double>(0, (sum, item) => sum + (item['energy'] as double));
+      final lastMonthTotalEnergy =
+      lastMonthData.fold<double>(0, (sum, item) => sum + (item['energy'] as double));
 
       setState(() {
-        _monthlyImpact = thisMonthTotal - lastMonthTotal;
+        _monthlyImpact = thisMonthTotalCO2 - lastMonthTotalCO2;
+        _monthlyEnergyImpact = thisMonthTotalEnergy - lastMonthTotalEnergy;
       });
     } catch (e) {
       debugPrint('Error fetching monthly impact: $e');
@@ -109,13 +125,19 @@ class _TotalImpactPageState extends State<TotalImpactPage>
       final yesterdayData = await _usageService.getRangeUsage(
           start: startYesterday, end: endYesterday);
 
-      final todayTotal =
-          todayData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
-      final yesterdayTotal =
-          yesterdayData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+      final todayTotalCO2 =
+      todayData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+      final yesterdayTotalCO2 =
+      yesterdayData.fold<double>(0, (sum, item) => sum + (item['co2'] as double));
+
+      final todayTotalEnergy =
+      todayData.fold<double>(0, (sum, item) => sum + (item['energy'] as double));
+      final yesterdayTotalEnergy =
+      yesterdayData.fold<double>(0, (sum, item) => sum + (item['energy'] as double));
 
       setState(() {
-        _dailyImpact = todayTotal - yesterdayTotal;
+        _dailyImpact = todayTotalCO2 - yesterdayTotalCO2;
+        _dailyEnergyImpact = todayTotalEnergy - yesterdayTotalEnergy;
       });
     } catch (e) {
       debugPrint('Error fetching daily impact: $e');
@@ -144,21 +166,21 @@ class _TotalImpactPageState extends State<TotalImpactPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildTabContent(_dailyImpact, _loadingDaily),
-          _buildTabContent(_monthlyImpact, _loadingMonthly),
-          _buildTabContent(_yearlyImpact, _loadingYearly),
+          _buildTabContent(_dailyImpact, _dailyEnergyImpact, _loadingDaily),
+          _buildTabContent(_monthlyImpact, _monthlyEnergyImpact, _loadingMonthly),
+          _buildTabContent(_yearlyImpact, _yearlyEnergyImpact, _loadingYearly),
         ],
       ),
     );
   }
 
   /// Helper to build each tab's content based on data + loading flags
-  Widget _buildTabContent(double impact, bool isLoading) {
+  Widget _buildTabContent(double impact, double energyImpact, bool isLoading) {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     return Center(
-      child: CarbonCircle(co2Value: impact),
+      child: CarbonCircle(co2Value: impact, energyValue: energyImpact),
     );
   }
 }

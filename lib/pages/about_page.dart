@@ -25,10 +25,7 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'The Digital Carbon Footprint Tracker is an educational and research-focused '
-              'mobile app designed to help users understand the environmental impact of their '
-              'social media usage. By monitoring app usage, this app calculates carbon emissions '
-              'based on real-time data and promotes awareness about digital sustainability.',
+              "The Eco-Impact Tracker is an educational and research-focused mobile app designed to help users understand the environmental impact of their social media usage. By monitoring app usage, the app calculates both carbon emissions and battery consumption based on real-time data, promoting awareness about digital sustainability and empowering users to manage their digital impact.",
               style: TextStyle(fontSize: 16),
             ),
 

@@ -32,7 +32,7 @@ class AboutPage extends StatelessWidget {
             const SizedBox(height: 16),
             const Text(
               'This is part of a course project of the program - Nordic Master on Sustainable '
-              'ICT Solutions of Tomorrow under Software Engineering department at Lut University, Finland.',
+              'ICT Solutions of Tomorrow under Software Engineering department at LUT University, Finland.',
               style: TextStyle(fontSize: 16),
             ),
           ],

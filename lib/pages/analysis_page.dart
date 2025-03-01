@@ -49,16 +49,16 @@ class _AnalysisPageState extends State<AnalysisPage>
 
   // Custom color palette for each app
   final Map<String, Color> _appColors = {
-    'com.google.android.youtube': Colors.red,
-    'tv.twitch.android.app': Colors.purple,
-    'com.twitter.android': Colors.lightBlue,
-    'com.linkedin.android': Colors.blueGrey,
-    'com.facebook.katana': Colors.blue,
-    'com.snapchat.android': Colors.yellow,
-    'com.instagram.android': Colors.pink,
-    'com.pinterest': Colors.deepOrange,
-    'com.reddit.frontpage': Colors.brown,
-    'com.zhiliaoapp.musically': Colors.green,
+    'com.google.android.youtube': const Color(0xFFFF0000),
+    'tv.twitch.android.app': const Color(0xFFF3722C),
+    'com.twitter.android': const Color(0xFF1DA1F2),
+    'com.linkedin.android': const Color(0xFF0077B5),
+    'com.facebook.katana': const Color(0xFF1877F2),
+    'com.snapchat.android': const Color(0xFFFFFC00),
+    'com.instagram.android': const Color(0xFFE4405F),
+    'com.pinterest': const Color(0xFF4D908E),
+    'com.reddit.frontpage': const Color(0xFF577590),
+    'com.zhiliaoapp.musically': const Color(0xFF277DA1),
   };
 
   @override
@@ -267,9 +267,12 @@ class _AnalysisPageState extends State<AnalysisPage>
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Usage Analysis'),
+
           bottom: const TabBar(
+            labelColor: Colors.white,
             tabs: [
               Tab(text: "CO₂ Analysis"),
+
               Tab(text: "Battery Analysis"),
             ],
           ),
